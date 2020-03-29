@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ChromePicker } from 'react-color';
+import ColorForm from './ColorForm'
 import { generateColorFromAPI } from 'api';
 import rgbToHex from 'helper/rgbToHex'
 import './style.scss'
@@ -155,33 +156,14 @@ const InputForm = () => {
         <div className='inputForm-container'>
             <h1>Generate moodboard</h1>
 
-            <div className='color-type-container'>
-                <h2>Color</h2>
-                <div className='selection-radio'>
-                    <div key='1' className={`single-radio ${colorOption === 1 ? ('is-selected') : ('')}`} onClick={() => { setColorOption(1) }}>
-                        <div className='selected-indicator'></div>
-                        <p>Generate with primary color</p>
-                    </div>
-                    <div key='2' className={`single-radio ${colorOption === 2 ? ('is-selected') : ('')}`} onClick={() => { setColorOption(2) }}>
-                        <div className='selected-indicator'></div>
-                        <p>Generate with primary &amp; complementary color</p>
-                    </div>
-                    <div
-                        key='3'
-                        className={`single-radio ${colorOption === 3 ? ('is-selected') : ('')}`}
-                        onClick={() => {
-                            setColorOption(3);
-                            setPrimaryColor('#______');
-                            setPrimaryColorRGB('N');
-                            setComplementColor('#______')
-                            setComplementColorRGB('N');
-                        }}
-                    >
-                        <div className='selected-indicator'></div>
-                        <p>No color... generate one for me please ~</p>
-                    </div>
-                </div>
-            </div>
+            <ColorForm
+                colorOption={colorOption}
+                setColorOption={setColorOption}
+                setPrimaryColor={setPrimaryColor}
+                setPrimaryColorRGB={setPrimaryColorRGB}
+                setComplementColor={setComplementColor}
+                setComplementColorRGB={setComplementColorRGB}
+            />
 
             <span className='horizontal-rule' />
 
