@@ -1,0 +1,107 @@
+.inputForm-container{
+    width: 50%;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.color-type-container{
+    text-align: left;
+
+    .single-radio{
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        margin-bottom: 10px;
+        cursor: pointer;
+    }
+
+    .selected-indicator{
+        position: relative;
+        width: 20px;
+        height: 20px;
+        margin-right: 10px;
+        background-color: var(--color-white);
+        border-radius: 50px;
+        transition: all .5s;
+    }
+
+    .selected-indicator::after{
+        content: '';
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        left: 0px;
+        top: 0px;
+        border-radius: 50px;
+        background-color: var(--color-white);
+        transition: all .25s;
+    }
+
+    .single-radio.is-selected p{
+        color: var(--color-white);
+        transition: all 1s;
+    }
+
+    .single-radio.is-selected .selected-indicator::after{
+        width: 14px;
+        height: 14px;
+        top: 3px;
+        left: 3px;
+        background-color: var(--color-blue);
+    }
+}
+
+.color-input-container{
+    text-align: left;
+    position: relative;
+
+    .popover{
+        position: absolute;
+        z-index: 2;
+    }
+    .cover{
+        position: fixed;
+        top: 0px;
+        right: 0px;
+        bottom: 0px;
+        left: 0px;
+    }
+
+    .color-preview-container{
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        margin: 10px 0 20px;
+
+        h1{
+            display: inline-block;
+            margin-right: 20px;
+        }
+
+        .color-preview{
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border-radius: 50px;
+        }
+    }
+}
+
+.generate-btn{
+    box-sizing: border-box;
+    min-width: 300px;
+    padding: 8px 20px;
+    display: inline-block;
+    border: none;
+    border-radius: 8px;
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--color-white);
+    background-color: var(--color-blue);
+}
+
+.color-output{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    gap: 10px;
+}
