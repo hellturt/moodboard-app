@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ChromePicker } from 'react-color';
 import ColorForm from './ColorForm'
-import { generateColorFromAPI } from 'api';
+import { generateColorFromAPI, getImagePexels } from 'api';
 import rgbToHex from 'helper/rgbToHex'
 import './style.scss'
 
@@ -16,6 +16,7 @@ const InputForm = () => {
     const [displayColorPickerComplementary, setDisplayColorPickerComplementary] = useState(false)
 
     const [colorResult, setColorResult] = useState([])
+    const [pexelsResult, setPexelsResult] = useState([])
 
     const handleClickPrimary = () => {
         if (displayColorPickerPrimary) {
@@ -50,19 +51,34 @@ const InputForm = () => {
         setComplementColorRGB([rgb.r, rgb.g, rgb.b])
     };
 
-    const runGenerator = () => {
+    const runGenerator = async () => {
         console.log({ primaryColorRGB, complementColorRGB })
-        generateColorFromAPI({
+
+        const color = {
             model: 'default',
             input: [primaryColorRGB, 'N', 'N', 'N', complementColorRGB]
-        }).then(res => {
-            console.log({ res })
-            const { status, data } = res
+        }
 
-            if (status === 200) {
-                setColorResult(data.result)
-            }
-        })
+        const response = await Promise.all([
+            generateColorFromAPI(color),
+            getImagePexels('people').catch(err => { console.log(err); return {} })
+        ])
+
+        const colorResult = response[0];
+        const pexelsResult = response[1];
+
+        console.log({ pexelsResult })
+
+
+        if (colorResult.status === 200) {
+            const { data } = colorResult
+            setColorResult(data.result)
+        }
+
+        if (pexelsResult.status === 200) {
+            const { data: { photos } } = pexelsResult;
+            setPexelsResult(photos)
+        }
     }
 
     const renderColorForm = () => {
@@ -143,9 +159,23 @@ const InputForm = () => {
             return colorResult.map(color => {
                 const hexColor = rgbToHex(color[0], color[1], color[2])
                 return (
-                    <div style={{ backgroundColor: `#${hexColor}` }}>
+                    <div key={hexColor} style={{ backgroundColor: `#${hexColor}` }}>
                         <h3>#{hexColor}</h3>
                     </div>
+                )
+            })
+        }
+    }
+
+    const renderPexelsOutput = () => {
+        if (pexelsResult.length > 0) {
+
+            return pexelsResult.map(image => {
+
+                const { id, src: { tiny } } = image
+
+                return (
+                    <img key={id} src={tiny} />
                 )
             })
         }
@@ -180,6 +210,10 @@ const InputForm = () => {
 
             <div className='color-output'>
                 {renderColorOutput()}
+            </div>
+
+            <div className='pexels-output'>
+                {renderPexelsOutput()}
             </div>
 
         </div>
