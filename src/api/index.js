@@ -4,6 +4,10 @@ const generateColorFromAPI = data => {
     return axios.post('http://colormind.io/api/', data)
 }
 
+const scrapePinterest = keyword => {
+    return axios.get(`http://localhost:5000/${keyword}`)
+}
+
 const getImagePexels = keyword => {
     return axios.get(`http://api.pexels.com/v1/search?query=${keyword}&per_page=16&page=1`, {
         headers: {
@@ -12,4 +16,4 @@ const getImagePexels = keyword => {
     })
 }
 
-export { generateColorFromAPI, getImagePexels }
+export { generateColorFromAPI, scrapePinterest, getImagePexels }

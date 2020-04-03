@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ChromePicker } from 'react-color';
 import ColorForm from './ColorForm'
-import { generateColorFromAPI, getImagePexels } from 'api';
+import { generateColorFromAPI, scrapePinterest, getImagePexels } from 'api';
 import rgbToHex from 'helper/rgbToHex'
 import './style.scss'
 
@@ -15,7 +15,9 @@ const InputForm = () => {
     const [displayColorPickerPrimary, setDisplayColorPickerPrimary] = useState(false)
     const [displayColorPickerComplementary, setDisplayColorPickerComplementary] = useState(false)
 
+    const [showResult, setShowResult] = useState(false)
     const [colorResult, setColorResult] = useState([])
+    const [pinterestResult, setPinterestResult] = useState([])
     const [pexelsResult, setPexelsResult] = useState([])
 
     const handleClickPrimary = () => {
@@ -61,13 +63,15 @@ const InputForm = () => {
 
         const response = await Promise.all([
             generateColorFromAPI(color),
-            getImagePexels('people').catch(err => { console.log(err); return {} })
+            scrapePinterest('health%20app'),
+            getImagePexels('health').catch(err => { console.log(err); return {} })
         ])
 
         const colorResult = response[0];
-        const pexelsResult = response[1];
+        const pinterestResult = response[1];
+        const pexelsResult = response[2];
 
-        console.log({ pexelsResult })
+        console.log({ pexelsResult, pinterestResult })
 
 
         if (colorResult.status === 200) {
@@ -75,10 +79,18 @@ const InputForm = () => {
             setColorResult(data.result)
         }
 
+        if (pinterestResult.status === 200) {
+            const { data } = pinterestResult
+            setPinterestResult(data.data)
+        }
+
+
         if (pexelsResult.status === 200) {
             const { data: { photos } } = pexelsResult;
             setPexelsResult(photos)
         }
+
+        setShowResult(true)
     }
 
     const renderColorForm = () => {
@@ -167,6 +179,20 @@ const InputForm = () => {
         }
     }
 
+    const renderPinterestOutput = () => {
+        if (pinterestResult.length > 0) {
+
+            return pinterestResult.map(image => {
+
+                const { imgSrc } = image
+
+                return (
+                    <img src={imgSrc} />
+                )
+            })
+        }
+    }
+
     const renderPexelsOutput = () => {
         if (pexelsResult.length > 0) {
 
@@ -182,42 +208,54 @@ const InputForm = () => {
     }
 
 
-    return (
-        <div className='inputForm-container'>
-            <h1>Generate moodboard</h1>
+    if (showResult) {
+        return (
+            <div className='result-container'>
+                <div className='color-output'>
+                    {renderColorOutput()}
+                </div>
 
-            <ColorForm
-                colorOption={colorOption}
-                setColorOption={setColorOption}
-                setPrimaryColor={setPrimaryColor}
-                setPrimaryColorRGB={setPrimaryColorRGB}
-                setComplementColor={setComplementColor}
-                setComplementColorRGB={setComplementColorRGB}
-            />
+                <div className='image-container pinterest-output'>
+                    {renderPinterestOutput()}
+                </div>
 
-            <span className='horizontal-rule' />
+                <div className='image-container pexels-output'>
+                    {renderPexelsOutput()}
+                </div>
 
-            <div className='color-input-container'>
-                {renderColorForm()}
+                <div className='image-container another-output'>
+                    {renderPexelsOutput()}
+                </div>
             </div>
+        )
+    } else {
+        return (
+            <div className='inputForm-container'>
+                <h1>Generate moodboard</h1>
 
+                <ColorForm
+                    colorOption={colorOption}
+                    setColorOption={setColorOption}
+                    setPrimaryColor={setPrimaryColor}
+                    setPrimaryColorRGB={setPrimaryColorRGB}
+                    setComplementColor={setComplementColor}
+                    setComplementColorRGB={setComplementColorRGB}
+                />
 
+                <span className='horizontal-rule' />
 
-            {colorOption === 3 ? null : (<span className='horizontal-rule' />)}
+                <div className='color-input-container'>
+                    {renderColorForm()}
+                </div>
 
-            <button onClick={() => runGenerator()} className='generate-btn' type='submit'>Generate</button>
+                {colorOption === 3 ? null : (<span className='horizontal-rule' />)}
 
-
-            <div className='color-output'>
-                {renderColorOutput()}
+                <button onClick={() => runGenerator()} className='generate-btn' type='submit'>Generate</button>
             </div>
+        )
+    }
 
-            <div className='pexels-output'>
-                {renderPexelsOutput()}
-            </div>
 
-        </div>
-    )
 }
 
 export default InputForm;
