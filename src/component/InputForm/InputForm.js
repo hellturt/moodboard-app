@@ -1,7 +1,17 @@
 import React, { useState } from 'react';
 import { ChromePicker } from 'react-color';
+import ReactLoading from 'react-loading';
+import ResultScreen from '../ResultScreen';
 import ColorForm from './ColorForm'
-import { generateColorFromAPI, scrapePinterest, getImagePexels } from 'api';
+import {
+    generateColorFromAPI,
+    scrapeBehance,
+    scrapeDribbble,
+    scrapePinterest,
+    scrapeDribbbleColor,
+    getCoolorsPallete,
+    getImagePexels
+} from 'api';
 import rgbToHex from 'helper/rgbToHex'
 import './style.scss'
 
@@ -14,9 +24,14 @@ const InputForm = () => {
     const [complementColorRGB, setComplementColorRGB] = useState('N');
     const [displayColorPickerPrimary, setDisplayColorPickerPrimary] = useState(false)
     const [displayColorPickerComplementary, setDisplayColorPickerComplementary] = useState(false)
+    const [keyword, setKeyword] = useState('');
 
+    const [isLoading, setIsLoading] = useState(false)
     const [showResult, setShowResult] = useState(false)
     const [colorResult, setColorResult] = useState([])
+    const [behanceResult, setBehanceResult] = useState([])
+    const [dribbbleResult, setDribbbleResult] = useState([])
+    const [dribbbleColorResult, setDribbbleColorResult] = useState([])
     const [pinterestResult, setPinterestResult] = useState([])
     const [pexelsResult, setPexelsResult] = useState([])
 
@@ -53,30 +68,84 @@ const InputForm = () => {
         setComplementColorRGB([rgb.r, rgb.g, rgb.b])
     };
 
-    const runGenerator = async () => {
-        console.log({ primaryColorRGB, complementColorRGB })
-
+    const regenerateColor = () => {
         const color = {
             model: 'default',
             input: [primaryColorRGB, 'N', 'N', 'N', complementColorRGB]
         }
 
+        // const color1 = primaryColor !== '#______' ? (primaryColor.replace('#', '')) : (randomColor());
+        // const color2 = complementColor !== '#______' ? (complementColor.replace('#', '')) : (randomColor());
+        // const color = `${color1}-${randomColor()}-${randomColor()}-${randomColor()}-${color2}`
+
+        generateColorFromAPI(color).then(colorResult => {
+            if (colorResult.status === 200) {
+                const { data } = colorResult
+                setColorResult(data.result)
+            }
+        })
+    }
+
+    const runGenerator = async () => {
+        setIsLoading(true)
+        const color = {
+            model: 'default',
+            input: [primaryColorRGB, 'N', 'N', 'N', complementColorRGB]
+        }
+
+        // const color1 = primaryColor !== '#______' ? (primaryColor.replace('#', '')) : (randomColor());
+        // const color2 = complementColor !== '#______' ? (complementColor.replace('#', '')) : (randomColor());
+        // const color = `${color1}-${randomColor()}-${randomColor()}-${randomColor()}-${color2}`
+
+        const combinedKeyword = keyword.replace(' ', '%')
+        console.log(combinedKeyword)
+        const pinterestKeyword = `${combinedKeyword} app`
+
         const response = await Promise.all([
             generateColorFromAPI(color),
-            scrapePinterest('health%20app'),
-            getImagePexels('health').catch(err => { console.log(err); return {} })
+            scrapeBehance(pinterestKeyword),
+            scrapeDribbble(pinterestKeyword),
+            scrapePinterest(pinterestKeyword),
+            getImagePexels(keyword).catch(err => { console.log(err); return {} })
         ])
 
-        const colorResult = response[0];
-        const pinterestResult = response[1];
-        const pexelsResult = response[2];
 
-        console.log({ pexelsResult, pinterestResult })
+        const colorResult = response[0];
+        const behanceResult = response[1];
+        const dribbbleResult = response[2]
+        const pinterestResult = response[3];
+        const pexelsResult = response[4];
+
+
+        const { data: { result } } = colorResult
+
+        const hexColor = rgbToHex(result[0][0], result[0][1], result[0][2])
+
+        const selectedColor = hexColor.replace('#', '')
+
+        const dribbbleColorResult = await scrapeDribbbleColor(selectedColor)
+
+        console.log({ dribbbleResult, dribbbleColorResult })
 
 
         if (colorResult.status === 200) {
             const { data } = colorResult
             setColorResult(data.result)
+        }
+
+        if (behanceResult.status === 200) {
+            const { data } = behanceResult
+            setBehanceResult(data.data)
+        }
+
+        if (dribbbleResult.status === 200) {
+            const { data } = dribbbleResult
+            setDribbbleResult(data.data)
+        }
+
+        if (dribbbleColorResult.status === 200) {
+            const { data } = dribbbleColorResult
+            setDribbbleColorResult(data.data)
         }
 
         if (pinterestResult.status === 200) {
@@ -90,6 +159,7 @@ const InputForm = () => {
             setPexelsResult(photos)
         }
 
+        setIsLoading(false)
         setShowResult(true)
     }
 
@@ -139,7 +209,7 @@ const InputForm = () => {
 
                     )}
 
-                    <h3>Complementary Color:</h3>
+                    <h3>Secondary Color:</h3>
                     <div className='color-preview-container' onClick={() => handleClickComplement()}>
                         <h1>{complementColor.toUpperCase()}</h1>
                         <div className='color-preview' style={{ backgroundColor: complementColor }}></div>
@@ -164,74 +234,30 @@ const InputForm = () => {
         }
     }
 
-    const renderColorOutput = () => {
-
-        if (colorResult.length > 0) {
-
-            return colorResult.map(color => {
-                const hexColor = rgbToHex(color[0], color[1], color[2])
-                return (
-                    <div key={hexColor} style={{ backgroundColor: `#${hexColor}` }}>
-                        <h3>#{hexColor}</h3>
-                    </div>
-                )
-            })
-        }
-    }
-
-    const renderPinterestOutput = () => {
-        if (pinterestResult.length > 0) {
-
-            return pinterestResult.map(image => {
-
-                const { imgSrc } = image
-
-                return (
-                    <img src={imgSrc} />
-                )
-            })
-        }
-    }
-
-    const renderPexelsOutput = () => {
-        if (pexelsResult.length > 0) {
-
-            return pexelsResult.map(image => {
-
-                const { id, src: { tiny } } = image
-
-                return (
-                    <img key={id} src={tiny} />
-                )
-            })
-        }
-    }
-
-
-    if (showResult) {
+    if (isLoading) {
         return (
-            <div className='result-container'>
-                <div className='color-output'>
-                    {renderColorOutput()}
-                </div>
-
-                <div className='image-container pinterest-output'>
-                    {renderPinterestOutput()}
-                </div>
-
-                <div className='image-container pexels-output'>
-                    {renderPexelsOutput()}
-                </div>
-
-                <div className='image-container another-output'>
-                    {renderPexelsOutput()}
-                </div>
+            <div className='loader-container'>
+                <ReactLoading type={'cubes'} color={'#524F5D'} />
+                <h4>Scrapping data...</h4>
             </div>
         )
+    }
+
+    if (showResult) {
+        return <ResultScreen
+            colorResult={colorResult}
+            rgbToHex={rgbToHex}
+            behanceResult={behanceResult}
+            dribbbleResult={dribbbleResult}
+            dribbbleColorResult={dribbbleColorResult}
+            pinterestResult={pinterestResult}
+            pexelsResult={pexelsResult}
+            regenerateColor={regenerateColor}
+        />
     } else {
         return (
             <div className='inputForm-container'>
-                <h1>Generate moodboard</h1>
+                <h1 className="title">Generate moodboard</h1>
 
                 <ColorForm
                     colorOption={colorOption}
@@ -249,6 +275,14 @@ const InputForm = () => {
                 </div>
 
                 {colorOption === 3 ? null : (<span className='horizontal-rule' />)}
+
+                <div className="keyword-container">
+                    <h2>Keyword</h2>
+                    <p>Enter single keyword that represent your project: </p>
+                    <input type="text" value={keyword} onChange={e => setKeyword(e.target.value)} placeholder="Enter a single keyword..." required />
+                </div>
+
+                <span className='horizontal-rule' />
 
                 <button onClick={() => runGenerator()} className='generate-btn' type='submit'>Generate</button>
             </div>

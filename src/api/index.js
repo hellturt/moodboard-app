@@ -4,8 +4,20 @@ const generateColorFromAPI = data => {
     return axios.post('http://colormind.io/api/', data)
 }
 
+const scrapeBehance = keyword => {
+    return axios.get(`http://localhost:5000/be/${keyword}`)
+}
+
 const scrapePinterest = keyword => {
-    return axios.get(`http://localhost:5000/${keyword}`)
+    return axios.get(`http://localhost:5000/pin/${keyword}`)
+}
+
+const scrapeDribbble = keyword => {
+    return axios.get(`http://localhost:5000/drib/${keyword}`)
+}
+
+const scrapeDribbbleColor = color => {
+    return axios.get(`http://localhost:5000/drib-color/${color}`)
 }
 
 const getImagePexels = keyword => {
@@ -16,4 +28,8 @@ const getImagePexels = keyword => {
     })
 }
 
-export { generateColorFromAPI, scrapePinterest, getImagePexels }
+const getCoolorsPallete = keyword => {
+    return axios.get(`http://localhost:5000/cool/${keyword}`)
+}
+
+export { generateColorFromAPI, scrapeBehance, scrapeDribbble, scrapeDribbbleColor, scrapePinterest, getCoolorsPallete, getImagePexels }

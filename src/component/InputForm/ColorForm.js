@@ -20,7 +20,7 @@ const ColorForm = props => {
                 </div>
                 <div key='2' className={`single-radio ${colorOption === 2 ? ('is-selected') : ('')}`} onClick={() => { setColorOption(2) }}>
                     <div className='selected-indicator'></div>
-                    <p>Generate with primary &amp; complementary color</p>
+                    <p>Generate with primary &amp; secondary color</p>
                 </div>
                 <div
                     key='3'
