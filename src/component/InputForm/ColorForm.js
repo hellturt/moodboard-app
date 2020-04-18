@@ -18,18 +18,18 @@ const ColorForm = props => {
                     <div className='selected-indicator'></div>
                     <p>Generate with primary color</p>
                 </div>
-                <div key='2' className={`single-radio ${colorOption === 2 ? ('is-selected') : ('')}`} onClick={() => { setColorOption(2) }}>
+                {/* <div key='2' className={`single-radio ${colorOption === 2 ? ('is-selected') : ('')}`} onClick={() => { setColorOption(2) }}>
                     <div className='selected-indicator'></div>
                     <p>Generate with primary &amp; secondary color</p>
-                </div>
+                </div> */}
                 <div
                     key='3'
                     className={`single-radio ${colorOption === 3 ? ('is-selected') : ('')}`}
                     onClick={() => {
                         setColorOption(3);
-                        setPrimaryColor('#______');
+                        setPrimaryColor('');
                         setPrimaryColorRGB('N');
-                        setComplementColor('#______')
+                        setComplementColor('')
                         setComplementColorRGB('N');
                     }}
                 >

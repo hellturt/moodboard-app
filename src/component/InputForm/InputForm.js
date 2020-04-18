@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChromePicker } from 'react-color';
 import ReactLoading from 'react-loading';
+import tinyColor from 'tinycolor2';
+import Please from 'pleasejs';
 import ResultScreen from '../ResultScreen';
 import ColorForm from './ColorForm'
 import {
@@ -9,7 +11,7 @@ import {
     scrapeDribbble,
     scrapePinterest,
     scrapeDribbbleColor,
-    getCoolorsPallete,
+    // getCoolorsPallete,
     getImagePexels
 } from 'api';
 import rgbToHex from 'helper/rgbToHex'
@@ -18,9 +20,9 @@ import './style.scss'
 const InputForm = () => {
 
     const [colorOption, setColorOption] = useState(1);
-    const [primaryColor, setPrimaryColor] = useState('#______');
+    const [primaryColor, setPrimaryColor] = useState('');
     const [primaryColorRGB, setPrimaryColorRGB] = useState('N');
-    const [complementColor, setComplementColor] = useState('#______');
+    const [complementColor, setComplementColor] = useState('');
     const [complementColorRGB, setComplementColorRGB] = useState('N');
     const [displayColorPickerPrimary, setDisplayColorPickerPrimary] = useState(false)
     const [displayColorPickerComplementary, setDisplayColorPickerComplementary] = useState(false)
@@ -68,45 +70,59 @@ const InputForm = () => {
         setComplementColorRGB([rgb.r, rgb.g, rgb.b])
     };
 
-    const regenerateColor = () => {
-        const color = {
-            model: 'default',
-            input: [primaryColorRGB, 'N', 'N', 'N', complementColorRGB]
+    const generateColor = async () => {
+        let primaryToHSV;
+        if (primaryColor) {
+            primaryToHSV = tinyColor(primaryColor).toHsv()
+        } else {
+            primaryToHSV = tinyColor.random().toHsv()
         }
 
-        // const color1 = primaryColor !== '#______' ? (primaryColor.replace('#', '')) : (randomColor());
-        // const color2 = complementColor !== '#______' ? (complementColor.replace('#', '')) : (randomColor());
-        // const color = `${color1}-${randomColor()}-${randomColor()}-${randomColor()}-${color2}`
+        console.log({ primaryColor, primaryToHSV })
 
-        generateColorFromAPI(color).then(colorResult => {
-            if (colorResult.status === 200) {
-                const { data } = colorResult
-                setColorResult(data.result)
+
+
+
+        const colors = Please.make_scheme(
+            primaryToHSV,
+            {
+                scheme_type: 'ana',
+                golden: true,
+                format: 'hex'
             }
-        })
+
+        );
+
+        const complimentColors = Please.make_scheme(
+            primaryToHSV,
+            {
+                scheme_type: 'complement',
+                golden: true,
+                format: 'hex'
+            }
+
+        );
+        const colorToState = colors.splice(0, 4).concat(complimentColors[1])
+        console.log({ colors, complimentColors, colorToState })
+        setColorResult(colorToState)
+
+        return colorToState[0]
     }
 
     const runGenerator = async () => {
         setIsLoading(true)
-        const color = {
-            model: 'default',
-            input: [primaryColorRGB, 'N', 'N', 'N', complementColorRGB]
-        }
+        generateColor()
 
-        // const color1 = primaryColor !== '#______' ? (primaryColor.replace('#', '')) : (randomColor());
-        // const color2 = complementColor !== '#______' ? (complementColor.replace('#', '')) : (randomColor());
-        // const color = `${color1}-${randomColor()}-${randomColor()}-${randomColor()}-${color2}`
-
-        const combinedKeyword = keyword.replace(' ', '%')
+        const combinedKeyword = keyword.replace(' ', '%20')
         console.log(combinedKeyword)
         const pinterestKeyword = `${combinedKeyword} app`
 
         const response = await Promise.all([
-            generateColorFromAPI(color),
-            scrapeBehance(pinterestKeyword),
-            scrapeDribbble(pinterestKeyword),
+            generateColor(),
+            scrapeBehance(combinedKeyword),
+            scrapeDribbble(combinedKeyword),
             scrapePinterest(pinterestKeyword),
-            getImagePexels(keyword).catch(err => { console.log(err); return {} })
+            // getImagePexels(keyword).catch(err => { console.log(err); return {} })
         ])
 
 
@@ -114,24 +130,17 @@ const InputForm = () => {
         const behanceResult = response[1];
         const dribbbleResult = response[2]
         const pinterestResult = response[3];
-        const pexelsResult = response[4];
+        // const pexelsResult = response[4];
 
 
-        const { data: { result } } = colorResult
+        // const { data: { result } } = colorResult
 
-        const hexColor = rgbToHex(result[0][0], result[0][1], result[0][2])
+        // const hexColor = rgbToHex(result[0][0], result[0][1], result[0][2])
 
-        const selectedColor = hexColor.replace('#', '')
-
+        const selectedColor = colorResult.replace('#', '')
         const dribbbleColorResult = await scrapeDribbbleColor(selectedColor)
 
         console.log({ dribbbleResult, dribbbleColorResult })
-
-
-        if (colorResult.status === 200) {
-            const { data } = colorResult
-            setColorResult(data.result)
-        }
 
         if (behanceResult.status === 200) {
             const { data } = behanceResult
@@ -154,13 +163,16 @@ const InputForm = () => {
         }
 
 
-        if (pexelsResult.status === 200) {
-            const { data: { photos } } = pexelsResult;
-            setPexelsResult(photos)
-        }
+        // if (pexelsResult.status === 200) {
+        //     const { data: { photos } } = pexelsResult;
+        //     setPexelsResult(photos)
+        // }
 
         setIsLoading(false)
+        setPrimaryColor('')
         setShowResult(true)
+
+
     }
 
     const renderColorForm = () => {
@@ -170,7 +182,7 @@ const InputForm = () => {
                 <>
                     <h3>Primary Color:</h3>
                     <div className='color-preview-container' onClick={() => handleClickPrimary()}>
-                        <h1>{primaryColor.toUpperCase()}</h1>
+                        <h1>{primaryColor ? primaryColor.toUpperCase() : '#______'}</h1>
                         <div className='color-preview' style={{ backgroundColor: primaryColor }}></div>
                     </div>
 
@@ -193,7 +205,7 @@ const InputForm = () => {
                 <>
                     <h3>Primary Color:</h3>
                     <div className='color-preview-container' onClick={() => handleClickPrimary()}>
-                        <h1>{primaryColor.toUpperCase()}</h1>
+                        <h1>{primaryColor ? primaryColor.toUpperCase() : '#______'}</h1>
                         <div className='color-preview' style={{ backgroundColor: primaryColor }}></div>
                     </div>
 
@@ -211,7 +223,7 @@ const InputForm = () => {
 
                     <h3>Secondary Color:</h3>
                     <div className='color-preview-container' onClick={() => handleClickComplement()}>
-                        <h1>{complementColor.toUpperCase()}</h1>
+                        <h1>{complementColor ? complementColor.toUpperCase() : '#______'}</h1>
                         <div className='color-preview' style={{ backgroundColor: complementColor }}></div>
                     </div>
 
@@ -234,6 +246,7 @@ const InputForm = () => {
         }
     }
 
+
     if (isLoading) {
         return (
             <div className='loader-container'>
@@ -246,13 +259,11 @@ const InputForm = () => {
     if (showResult) {
         return <ResultScreen
             colorResult={colorResult}
-            rgbToHex={rgbToHex}
             behanceResult={behanceResult}
             dribbbleResult={dribbbleResult}
             dribbbleColorResult={dribbbleColorResult}
             pinterestResult={pinterestResult}
-            pexelsResult={pexelsResult}
-            regenerateColor={regenerateColor}
+            generateColor={generateColor}
         />
     } else {
         return (
@@ -278,7 +289,7 @@ const InputForm = () => {
 
                 <div className="keyword-container">
                     <h2>Keyword</h2>
-                    <p>Enter single keyword that represent your project: </p>
+                    <p>Enter keyword: </p>
                     <input type="text" value={keyword} onChange={e => setKeyword(e.target.value)} placeholder="Enter a single keyword..." required />
                 </div>
 

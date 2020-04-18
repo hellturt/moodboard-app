@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css?family=Montserrat+Alternates&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Montserrat&display=swap');
 
 :root {
   --color-black: #2b2b2b;
@@ -7,6 +7,7 @@
   --color-white: #e0e0e0;
   --color-blue: #6B9D95;
   --color-green: #88B290;
+  --color-orange: #c55f25;
   --text-size-h1: 36px;
   --text-size-h2: 24px;
   --text-size-h3: 16px;
@@ -21,7 +22,7 @@ body{
 
 h1,h2,h3,h4,h5,p,a, input, button{
   margin: 0;
-  font-family: 'Montserrat Alternates', sans-serif;;
+  font-family: 'Montserrat', sans-serif;;
 }
 
 h1{
