@@ -80,13 +80,10 @@ const InputForm = () => {
 
         console.log({ primaryColor, primaryToHSV })
 
-
-
-
         const colors = Please.make_scheme(
             primaryToHSV,
             {
-                scheme_type: 'ana',
+                scheme_type: 'analogous',
                 golden: true,
                 format: 'hex'
             }
@@ -115,14 +112,13 @@ const InputForm = () => {
 
         const combinedKeyword = keyword.replace(' ', '%20')
         console.log(combinedKeyword)
-        const pinterestKeyword = `${combinedKeyword} app`
+        const pinterestKeyword = `${combinedKeyword}%20app`
 
         const response = await Promise.all([
             generateColor(),
-            scrapeBehance(combinedKeyword),
-            scrapeDribbble(combinedKeyword),
+            scrapeBehance(pinterestKeyword),
+            scrapeDribbble(pinterestKeyword),
             scrapePinterest(pinterestKeyword),
-            // getImagePexels(keyword).catch(err => { console.log(err); return {} })
         ])
 
 
@@ -130,17 +126,10 @@ const InputForm = () => {
         const behanceResult = response[1];
         const dribbbleResult = response[2]
         const pinterestResult = response[3];
-        // const pexelsResult = response[4];
-
-
-        // const { data: { result } } = colorResult
-
-        // const hexColor = rgbToHex(result[0][0], result[0][1], result[0][2])
 
         const selectedColor = colorResult.replace('#', '')
         const dribbbleColorResult = await scrapeDribbbleColor(selectedColor)
 
-        console.log({ dribbbleResult, dribbbleColorResult })
 
         if (behanceResult.status === 200) {
             const { data } = behanceResult
@@ -162,17 +151,9 @@ const InputForm = () => {
             setPinterestResult(data.data)
         }
 
-
-        // if (pexelsResult.status === 200) {
-        //     const { data: { photos } } = pexelsResult;
-        //     setPexelsResult(photos)
-        // }
-
         setIsLoading(false)
         setPrimaryColor('')
         setShowResult(true)
-
-
     }
 
     const renderColorForm = () => {
