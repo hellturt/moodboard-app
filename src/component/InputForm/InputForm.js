@@ -6,26 +6,18 @@ import Please from 'pleasejs';
 import ResultScreen from '../ResultScreen';
 import ColorForm from './ColorForm'
 import {
-    generateColorFromAPI,
     scrapeBehance,
     scrapeDribbble,
     scrapePinterest,
     scrapeDribbbleColor,
-    // getCoolorsPallete,
-    getImagePexels
 } from 'api';
-import rgbToHex from 'helper/rgbToHex'
 import './style.scss'
 
 const InputForm = () => {
 
     const [colorOption, setColorOption] = useState(1);
     const [primaryColor, setPrimaryColor] = useState('');
-    const [primaryColorRGB, setPrimaryColorRGB] = useState('N');
-    const [complementColor, setComplementColor] = useState('');
-    const [complementColorRGB, setComplementColorRGB] = useState('N');
     const [displayColorPickerPrimary, setDisplayColorPickerPrimary] = useState(false)
-    const [displayColorPickerComplementary, setDisplayColorPickerComplementary] = useState(false)
     const [keyword, setKeyword] = useState('');
 
     const [isLoading, setIsLoading] = useState(false)
@@ -35,7 +27,6 @@ const InputForm = () => {
     const [dribbbleResult, setDribbbleResult] = useState([])
     const [dribbbleColorResult, setDribbbleColorResult] = useState([])
     const [pinterestResult, setPinterestResult] = useState([])
-    const [pexelsResult, setPexelsResult] = useState([])
 
     const handleClickPrimary = () => {
         if (displayColorPickerPrimary) {
@@ -45,30 +36,20 @@ const InputForm = () => {
         }
     };
 
-    const handleClickComplement = () => {
-        if (displayColorPickerPrimary) {
-            setDisplayColorPickerComplementary(false)
-        } else {
-            setDisplayColorPickerComplementary(true)
-        }
-    };
-
     const handleClose = () => {
         setDisplayColorPickerPrimary(false)
-        setDisplayColorPickerComplementary(false)
     };
 
     const handlePrimaryChange = color => {
         const { hex, rgb } = color
         setPrimaryColor(hex)
-        setPrimaryColorRGB([rgb.r, rgb.g, rgb.b])
     };
 
-    const handleComplementChange = color => {
-        const { hex, rgb } = color
-        setComplementColor(hex)
-        setComplementColorRGB([rgb.r, rgb.g, rgb.b])
-    };
+    // const handleComplementChange = color => {
+    //     const { hex, rgb } = color
+    //     setComplementColor(hex)
+    //     setComplementColorRGB([rgb.r, rgb.g, rgb.b])
+    // };
 
     const generateColor = async () => {
         let primaryToHSV;
@@ -114,18 +95,23 @@ const InputForm = () => {
         console.log(combinedKeyword)
         const pinterestKeyword = `${combinedKeyword}%20app`
 
-        const response = await Promise.all([
-            generateColor(),
-            scrapeBehance(pinterestKeyword),
-            scrapeDribbble(pinterestKeyword),
-            scrapePinterest(pinterestKeyword),
-        ])
+        // const response = await Promise.all([
+        //     generateColor(),
+        //     scrapeBehance(pinterestKeyword),
+        //     scrapeDribbble(pinterestKeyword),
+        //     scrapePinterest(pinterestKeyword),
+        // ])
 
 
-        const colorResult = response[0];
-        const behanceResult = response[1];
-        const dribbbleResult = response[2]
-        const pinterestResult = response[3];
+        // const colorResult = response[0];
+        // const behanceResult = response[1];
+        // const dribbbleResult = response[2]
+        // const pinterestResult = response[3];
+
+        const colorResult = await generateColor();
+        const behanceResult = await scrapeBehance(pinterestKeyword)
+        const dribbbleResult = await scrapeDribbble(pinterestKeyword)
+        const pinterestResult = await scrapePinterest(pinterestKeyword)
 
         const selectedColor = colorResult.replace('#', '')
         const dribbbleColorResult = await scrapeDribbbleColor(selectedColor)
@@ -181,47 +167,6 @@ const InputForm = () => {
 
                 </>
             )
-        } else if (colorOption === 2) {
-            return (
-                <>
-                    <h3>Primary Color:</h3>
-                    <div className='color-preview-container' onClick={() => handleClickPrimary()}>
-                        <h1>{primaryColor ? primaryColor.toUpperCase() : '#______'}</h1>
-                        <div className='color-preview' style={{ backgroundColor: primaryColor }}></div>
-                    </div>
-
-                    {displayColorPickerPrimary && (
-                        <div className='popover'>
-                            <div className='cover' onClick={() => handleClose()} />
-                            <ChromePicker
-                                disableAlpha={true}
-                                color={primaryColor}
-                                onChange={(color) => handlePrimaryChange(color)}
-                            />
-                        </div>
-
-                    )}
-
-                    <h3>Secondary Color:</h3>
-                    <div className='color-preview-container' onClick={() => handleClickComplement()}>
-                        <h1>{complementColor ? complementColor.toUpperCase() : '#______'}</h1>
-                        <div className='color-preview' style={{ backgroundColor: complementColor }}></div>
-                    </div>
-
-                    {displayColorPickerComplementary && (
-                        <div className='popover'>
-                            <div className='cover' onClick={() => handleClose()} />
-                            <ChromePicker
-                                disableAlpha={true}
-                                color={complementColor}
-                                onChange={(color) => handleComplementChange(color)}
-                            />
-                        </div>
-
-                    )}
-
-                </>
-            )
         } else {
             return null
         }
@@ -255,9 +200,6 @@ const InputForm = () => {
                     colorOption={colorOption}
                     setColorOption={setColorOption}
                     setPrimaryColor={setPrimaryColor}
-                    setPrimaryColorRGB={setPrimaryColorRGB}
-                    setComplementColor={setComplementColor}
-                    setComplementColorRGB={setComplementColorRGB}
                 />
 
                 <span className='horizontal-rule' />
