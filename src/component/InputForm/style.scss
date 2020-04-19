@@ -63,9 +63,6 @@
 .color-input-container{
     text-align: left;
     position: relative;
-    display: grid;
-    gap: 0 50px;
-    grid-template-columns: 1fr 1fr;
 
     h3{
         font-size: 18px;
@@ -277,6 +274,7 @@
             display: flex;
             justify-content: flex-start;
             align-items: flex-start;
+            overflow-y: hidden;
             height: 100%;
         }
 
