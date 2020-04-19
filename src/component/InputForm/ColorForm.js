@@ -5,9 +5,6 @@ const ColorForm = props => {
         colorOption,
         setColorOption,
         setPrimaryColor,
-        setPrimaryColorRGB,
-        setComplementColor,
-        setComplementColorRGB
     } = props;
 
     return (
@@ -28,9 +25,6 @@ const ColorForm = props => {
                     onClick={() => {
                         setColorOption(3);
                         setPrimaryColor('');
-                        setPrimaryColorRGB('N');
-                        setComplementColor('')
-                        setComplementColorRGB('N');
                     }}
                 >
                     <div className='selected-indicator'></div>
