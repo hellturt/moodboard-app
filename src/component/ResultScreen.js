@@ -1,14 +1,14 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import tinyColor from 'tinycolor2';
-import { CSSTransition } from 'react-transition-group';
-import { ReactComponent as ReloadIcon } from 'assets/refresh.svg'
-import { ReactComponent as LinkIcon } from 'assets/link.svg'
+import ReactLoading from 'react-loading';
+import { FaSyncAlt, FaExternalLinkAlt } from 'react-icons/fa'
 
 
 const ResultScreen = props => {
     const [isPreview, setIsPreview] = useState(false);
     const [previewItem, setPreviewItem] = useState({})
+    const [copyMsg, setCopyMsg] = useState('')
 
     const { colorResult, behanceResult, dribbbleResult, dribbbleColorResult, pinterestResult, generateColor } = props;
 
@@ -33,7 +33,6 @@ const ResultScreen = props => {
 
     const copyCode = (e) => {
         const h3 = e.currentTarget.querySelector('h3').innerHTML
-        console.log(h3)
 
         navigator.permissions.query({ name: "clipboard-write" })
             .then(result => {
@@ -43,7 +42,11 @@ const ResultScreen = props => {
                 }
             })
             .then(() => {
-                alert("Copied " + h3 + " to clipboard.");
+                // alert("Copied " + h3 + " to clipboard.");
+                setCopyMsg(h3)
+                setTimeout(() => {
+                    setCopyMsg('')
+                }, 4000)
             })
     }
 
@@ -54,7 +57,7 @@ const ResultScreen = props => {
             return colorResult.map(color => {
                 const hexColor = color
                 return (
-                    <div onClick={(e) => copyCode(e)} key={hexColor} style={{ backgroundColor: `${hexColor}`, transition: 'all .25s' }}>
+                    <div className='color-panel' onClick={(e) => copyCode(e)} key={hexColor} style={{ backgroundColor: `${hexColor}`, transition: 'all .25s' }}>
                         <h3 style={{ color: `${saturateColor(hexColor)}` }}>{hexColor}</h3>
                     </div>
                 )
@@ -72,78 +75,80 @@ const ResultScreen = props => {
                 return (
 
                     <div key={index} className='img-link' onClick={(e) => showPreview({ imgSrc, imgLink })}>
-                        <img src={imgSrc} />
+                        <img src={imgSrc} alt={imgSrc} />
 
                         {imgLink && (
-                            <a className='item-link' href={imgLink} target='_blank' onClick={e => e.stopPropagation()}><LinkIcon /></a>
+                            <a className='item-link' href={imgLink} target='_blank' rel="noopener noreferrer" onClick={e => e.stopPropagation()}><FaExternalLinkAlt /></a>
                         )}
                     </div>
                 )
             })
+        } else {
+            return (
+                <div className='loader-container'>
+                    <ReactLoading type={'cubes'} color={'#524F5D'} />
+                    <h4>Scrapping data...</h4>
+                </div>
+            )
         }
     }
 
     const renderPreview = () => {
         return (
-            <div className='preview-container' onClick={() => closePreview()}>
-                <img src={previewItem.imgSrc} />
+            <div className={`preview-container ${isPreview ? 'show' : ''}`} onClick={() => closePreview()}>
+                <img src={previewItem.imgSrc} alt={previewItem.imgSrc} />
             </div>
         )
     }
 
     return (
+        <>
+            <div className={`copy-alert-container ${copyMsg.length > 0 ? 'show' : ''} `}>
+                Copied to clipboard
+            </div>
 
-        <div className='result-container'>
+            {renderPreview()}
 
-            {isPreview && renderPreview()}
+            <div className='result-container'>
+                <div className='color-output'>
+                    {renderColorOutput()}
+                    <div className='color-options'>
+                        <div className='regenerate-btn' onClick={() => generateColor()}>
+                            <FaSyncAlt />
+                            <p>Shuffle</p>
+                        </div>
+                    </div>
+                </div>
 
+                <div className='image-container dribbble-color-output'>
+                    <div className="output-info-container">dribbble-color</div>
+                    <div className='output-data'>
+                        {renderIdeaOutput(dribbbleColorResult)}
+                    </div>
+                </div>
 
-            <div className='color-output'>
-                {renderColorOutput()}
-                <div className='color-options'>
-                    <div className='regenerate-btn' onClick={() => generateColor()}>
-                        {<ReloadIcon />}
-                        <p>Shuffle</p>
+                <div className='image-container behance-output'>
+                    <div className="output-info-container">behance</div>
+                    <div className='output-data'>
+                        {renderIdeaOutput(behanceResult)}
+                    </div>
+                </div>
+
+                <div className='image-container pinterest-output'>
+                    <div className="output-info-container">pinterest</div>
+                    <div className='output-data'>
+                        {renderIdeaOutput(pinterestResult)}
+                    </div>
+                </div>
+
+                <div className='image-container dribbble-output'>
+                    <div className="output-info-container">dribbble</div>
+                    <div className='output-data'>
+                        {renderIdeaOutput(dribbbleResult)}
                     </div>
                 </div>
             </div>
-
-            <div className='image-container dribbble-color-output'>
-                <div className="output-info-container">
-                    dribbble-color
-                </div>
-                <div className='output-data'>
-                    {renderIdeaOutput(dribbbleColorResult)}
-                </div>
-            </div>
-
-            <div className='image-container behance-output'>
-                <div className="output-info-container">
-                    behance
-                </div>
-                <div className='output-data'>
-                    {renderIdeaOutput(behanceResult)}
-                </div>
-            </div>
-
-            <div className='image-container pinterest-output'>
-                <div className="output-info-container">
-                    pinterest
-                </div>
-                <div className='output-data'>
-                    {renderIdeaOutput(pinterestResult)}
-                </div>
-            </div>
-
-            <div className='image-container dribbble-output'>
-                <div className="output-info-container">
-                    dribbble
-                </div>
-                <div className='output-data'>
-                    {renderIdeaOutput(dribbbleResult)}
-                </div>
-            </div>
-        </div>
+        </>
     )
 }
 
