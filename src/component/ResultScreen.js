@@ -2,8 +2,7 @@
 import React, { useState } from 'react';
 import tinyColor from 'tinycolor2';
 import ReactLoading from 'react-loading';
-import { FaRandom, FaExternalLinkAlt } from 'react-icons/fa'
-import { ReactComponent as LinkIcon } from 'assets/link.svg'
+import { FaSyncAlt, FaExternalLinkAlt } from 'react-icons/fa'
 
 
 const ResultScreen = props => {
@@ -115,7 +114,7 @@ const ResultScreen = props => {
                     {renderColorOutput()}
                     <div className='color-options'>
                         <div className='regenerate-btn' onClick={() => generateColor()}>
-                            <FaRandom />
+                            <FaSyncAlt />
                             <p>Shuffle</p>
                         </div>
                     </div>
