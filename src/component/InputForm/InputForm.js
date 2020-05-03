@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ChromePicker } from 'react-color';
 import ReactLoading from 'react-loading';
 import tinyColor from 'tinycolor2';
@@ -6,24 +6,18 @@ import Please from 'pleasejs';
 import ResultScreen from '../ResultScreen';
 import ColorForm from './ColorForm'
 import {
-    generateColorFromAPI,
     scrapeBehance,
     scrapeDribbble,
     scrapePinterest,
     scrapeDribbbleColor,
-    // getCoolorsPallete,
-    getImagePexels
 } from 'api';
-import rgbToHex from 'helper/rgbToHex'
 import './style.scss'
 
 const InputForm = () => {
 
     const [colorOption, setColorOption] = useState(1);
     const [primaryColor, setPrimaryColor] = useState('');
-    const [primaryColorRGB, setPrimaryColorRGB] = useState('N');
     const [complementColor, setComplementColor] = useState('');
-    const [complementColorRGB, setComplementColorRGB] = useState('N');
     const [displayColorPickerPrimary, setDisplayColorPickerPrimary] = useState(false)
     const [displayColorPickerComplementary, setDisplayColorPickerComplementary] = useState(false)
     const [keyword, setKeyword] = useState('');
@@ -35,7 +29,6 @@ const InputForm = () => {
     const [dribbbleResult, setDribbbleResult] = useState([])
     const [dribbbleColorResult, setDribbbleColorResult] = useState([])
     const [pinterestResult, setPinterestResult] = useState([])
-    const [pexelsResult, setPexelsResult] = useState([])
 
     const handleClickPrimary = () => {
         if (displayColorPickerPrimary) {
@@ -59,15 +52,13 @@ const InputForm = () => {
     };
 
     const handlePrimaryChange = color => {
-        const { hex, rgb } = color
+        const { hex } = color
         setPrimaryColor(hex)
-        setPrimaryColorRGB([rgb.r, rgb.g, rgb.b])
     };
 
     const handleComplementChange = color => {
-        const { hex, rgb } = color
+        const { hex } = color
         setComplementColor(hex)
-        setComplementColorRGB([rgb.r, rgb.g, rgb.b])
     };
 
     const generateColor = async () => {
@@ -77,8 +68,6 @@ const InputForm = () => {
         } else {
             primaryToHSV = tinyColor.random().toHsv()
         }
-
-        console.log({ primaryColor, primaryToHSV })
 
         const colors = Please.make_scheme(
             primaryToHSV,
@@ -100,7 +89,6 @@ const InputForm = () => {
 
         );
         const colorToState = colors.splice(0, 4).concat(complimentColors[1])
-        console.log({ colors, complimentColors, colorToState })
         setColorResult(colorToState)
 
         return colorToState[0]
@@ -111,49 +99,37 @@ const InputForm = () => {
         generateColor()
 
         const combinedKeyword = keyword.replace(' ', '%20')
-        console.log(combinedKeyword)
         const pinterestKeyword = `${combinedKeyword}%20app`
 
-        const response = await Promise.all([
-            generateColor(),
-            scrapeBehance(pinterestKeyword),
-            scrapeDribbble(pinterestKeyword),
-            scrapePinterest(pinterestKeyword),
-        ])
-
-
-        const colorResult = response[0];
-        const behanceResult = response[1];
-        const dribbbleResult = response[2]
-        const pinterestResult = response[3];
+        const colorResult = await generateColor();
+        setIsLoading(false)
+        setPrimaryColor('')
+        setShowResult(true)
 
         const selectedColor = colorResult.replace('#', '')
         const dribbbleColorResult = await scrapeDribbbleColor(selectedColor)
-
-
-        if (behanceResult.status === 200) {
-            const { data } = behanceResult
-            setBehanceResult(data.data)
-        }
-
-        if (dribbbleResult.status === 200) {
-            const { data } = dribbbleResult
-            setDribbbleResult(data.data)
-        }
-
         if (dribbbleColorResult.status === 200) {
             const { data } = dribbbleColorResult
             setDribbbleColorResult(data.data)
         }
 
+        const dribbbleResult = await scrapeDribbble(pinterestKeyword)
+        if (dribbbleResult.status === 200) {
+            const { data } = dribbbleResult
+            setDribbbleResult(data.data)
+        }
+
+        const pinterestResult = await scrapePinterest(pinterestKeyword)
         if (pinterestResult.status === 200) {
             const { data } = pinterestResult
             setPinterestResult(data.data)
         }
 
-        setIsLoading(false)
-        setPrimaryColor('')
-        setShowResult(true)
+        const behanceResult = await scrapeBehance(pinterestKeyword)
+        if (behanceResult.status === 200) {
+            const { data } = behanceResult
+            setBehanceResult(data.data)
+        }
     }
 
     const renderColorForm = () => {
@@ -255,9 +231,7 @@ const InputForm = () => {
                     colorOption={colorOption}
                     setColorOption={setColorOption}
                     setPrimaryColor={setPrimaryColor}
-                    setPrimaryColorRGB={setPrimaryColorRGB}
                     setComplementColor={setComplementColor}
-                    setComplementColorRGB={setComplementColorRGB}
                 />
 
                 <span className='horizontal-rule' />

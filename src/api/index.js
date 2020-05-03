@@ -1,8 +1,7 @@
 import axios from 'axios';
 
-const generateColorFromAPI = data => {
-    return axios.post('http://colormind.io/api/', data)
-}
+// const url = 'http://moodly.illusionistdev.com:5000'
+const url = 'http://localhost:5000'
 
 const scrapeBehance = keyword => {
     return axios.get(`http://localhost:5000/be/${keyword}`)
@@ -32,4 +31,4 @@ const getCoolorsPallete = keyword => {
     return axios.get(`http://localhost:5000/cool/${keyword}`)
 }
 
-export { generateColorFromAPI, scrapeBehance, scrapeDribbble, scrapeDribbbleColor, scrapePinterest, getCoolorsPallete, getImagePexels }
+export { scrapeBehance, scrapeDribbble, scrapeDribbbleColor, scrapePinterest, getCoolorsPallete, getImagePexels }

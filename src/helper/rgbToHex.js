@@ -12,8 +12,6 @@ const rgbToHex = (r, g, b) => {
     const green = convertRGB(g)
     const blue = convertRGB(b)
 
-    console.log(`Converting rgb(${r}, ${g}, ${b}) into #${red + green + blue}`)
-
     return red + green + blue;
 }
 
