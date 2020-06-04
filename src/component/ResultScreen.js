@@ -10,7 +10,7 @@ const ResultScreen = props => {
     const [previewItem, setPreviewItem] = useState({})
     const [copyMsg, setCopyMsg] = useState('')
 
-    const { colorResult, behanceResult, dribbbleResult, dribbbleColorResult, pinterestResult, generateColor } = props;
+    const { colorResult, behanceResult, dribbbleResult, dribbbleColorResult, generateColor } = props;
 
     const saturateColor = hex => {
         const color = tinyColor(`${hex}`)
@@ -134,12 +134,12 @@ const ResultScreen = props => {
                     </div>
                 </div>
 
-                <div className='image-container pinterest-output'>
+                {/* <div className='image-container pinterest-output'>
                     <div className="output-info-container">pinterest</div>
                     <div className='output-data'>
                         {renderIdeaOutput(pinterestResult)}
                     </div>
-                </div>
+                </div> */}
 
                 <div className='image-container dribbble-output'>
                     <div className="output-info-container">dribbble</div>
