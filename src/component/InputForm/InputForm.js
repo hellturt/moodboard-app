@@ -119,11 +119,11 @@ const InputForm = () => {
             setDribbbleResult(data.data)
         }
 
-        const pinterestResult = await scrapePinterest(pinterestKeyword)
-        if (pinterestResult.status === 200) {
-            const { data } = pinterestResult
-            setPinterestResult(data.data)
-        }
+        // const pinterestResult = await scrapePinterest(pinterestKeyword)
+        // if (pinterestResult.status === 200) {
+        //     const { data } = pinterestResult
+        //     setPinterestResult(data.data)
+        // }
 
         const behanceResult = await scrapeBehance(pinterestKeyword)
         if (behanceResult.status === 200) {
@@ -219,7 +219,7 @@ const InputForm = () => {
             behanceResult={behanceResult}
             dribbbleResult={dribbbleResult}
             dribbbleColorResult={dribbbleColorResult}
-            pinterestResult={pinterestResult}
+            // pinterestResult={pinterestResult}
             generateColor={generateColor}
         />
     } else {
